@@ -1,0 +1,35 @@
+name: OpenText Software Delivery Platform Integration
+
+on:
+  pull_request:
+    types: [opened, edited, closed, reopened]
+  workflow_run:
+    workflows: [CI]
+    types: [requested, in_progress, completed]
+
+env: 
+    NODE_TLS_REJECT_UNAUTHORIZED: 0
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+  
+jobs:
+  sdp_integration_job:
+    runs-on: [self-hosted]
+    name: SDP-Integration#${{github.event.action}}#${{github.event.workflow_run.id}}
+    steps:
+      - name: Publish to OpenText SDP
+        uses: opentext/sdp-github-actions-integration
+        id: gitHubActionsIntegration
+        with:
+          octaneUrl: 'https://almoctane-apj.saas.microfocus.com'
+          octaneSharedSpace: 500
+          octaneWorkspace: 3001
+          octaneClientId: ${{secrets.SDP_CLIENT_ID}}
+          octaneClientSecret: ${{secrets.SDP_CLIENT_SECRET}}
+          githubToken: ${{secrets.GITHUB_TOKEN}}
+          serverBaseUrl: https://github.com/coloexpress3/sdpintegrate
+          pipelineNamePattern: '${workflow_name}'
+          unitTestResultsGlobPattern: "**/*.xml"
